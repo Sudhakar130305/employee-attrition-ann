@@ -2,80 +2,49 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+df = pd.read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
 
-class DataPreprocessor:
+# Drop unnecessary columns
+df.drop(
+    columns=[
+        "EmployeeCount",
+        "EmployeeNumber",
+        "StandardHours",
+        "Over18"
+    ],
+    inplace=True
+)
 
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.df = pd.read_csv(filepath)
+# Encode target
+df["Attrition"] = LabelEncoder().fit_transform(df["Attrition"])
 
-        self.label_encoders = {}
-        self.scaler = StandardScaler()
+# Encode categorical features
+categorical_cols = df.select_dtypes(include="object").columns
 
-    def encode_categorical_columns(self):
+for col in categorical_cols:
+    df[col] = LabelEncoder().fit_transform(df[col])
 
-        categorical_columns = self.df.select_dtypes(include=['object']).columns
+X = df.drop("Attrition", axis=1)
+y = df["Attrition"]
 
-        for column in categorical_columns:
+# Scale
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
 
-            if column != "Attrition":
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
 
-                encoder = LabelEncoder()
+# Save
+pd.DataFrame(X_train).to_csv("../data/X_train.csv", index=False)
+pd.DataFrame(X_test).to_csv("../data/X_test.csv", index=False)
 
-                self.df[column] = encoder.fit_transform(self.df[column])
+pd.DataFrame(y_train).to_csv("../data/y_train.csv", index=False)
+pd.DataFrame(y_test).to_csv("../data/y_test.csv", index=False)
 
-                self.label_encoders[column] = encoder
-
-    def encode_target(self):
-
-        encoder = LabelEncoder()
-
-        self.df["Attrition"] = encoder.fit_transform(self.df["Attrition"])
-
-        self.label_encoders["Attrition"] = encoder
-
-    def split_features_target(self):
-
-        X = self.df.drop("Attrition", axis=1)
-
-        y = self.df["Attrition"]
-
-        return X, y
-
-    def normalize(self, X_train, X_test):
-
-        X_train = self.scaler.fit_transform(X_train)
-
-        X_test = self.scaler.transform(X_test)
-
-        return X_train, X_test
-
-    def preprocess(self):
-
-        self.encode_categorical_columns()
-
-        self.encode_target()
-
-        X, y = self.split_features_target()
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
-            test_size=0.2,
-            random_state=42,
-            stratify=y
-        )
-
-        X_train, X_test = self.normalize(
-            X_train,
-            X_test
-        )
-
-        return (
-            X_train,
-            X_test,
-            y_train.values.reshape(-1,1),
-            y_test.values.reshape(-1,1)
-        )
-    
+print("Preprocessing complete.")
     

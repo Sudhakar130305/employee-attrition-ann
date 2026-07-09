@@ -1,17 +1,61 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
 from neural_network import NeuralNetwork
 
-# Load preprocessed data
-X = pd.read_csv("../data/X_train.csv").values
-y = pd.read_csv("../data/y_train.csv").values
+# Load Dataset
 
-print("X Shape:", X.shape)
-print("y Shape:", y.shape)
-print("Data Type:", X.dtype)
+df = pd.read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
 
-network = NeuralNetwork(X.shape[1])
+# Remove unnecessary columns
 
-predictions = network.forward(X)
+df.drop(["EmployeeNumber", "EmployeeCount", "Over18", "StandardHours"], axis=1, inplace=True)
 
-print("\nFirst 10 Predictions:\n")
-print(predictions[:10])
+# Convert target
+
+df["Attrition"] = df["Attrition"].map({
+    "Yes": 1,
+    "No": 0
+})
+
+# One Hot Encoding
+
+df = pd.get_dummies(df, drop_first=True)
+
+X = df.drop("Attrition", axis=1).values
+y = df["Attrition"].values.reshape(-1, 1)
+
+# Train Test Split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# Scaling
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Create Model
+
+nn = NeuralNetwork(
+
+    input_size=X_train.shape[1],
+
+    hidden_size=16,
+
+    output_size=1
+
+)
+
+# Forward Pass
+
+output = nn.forward(X_train)
+
+print(output[:10])

@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-
+from losses import binary_cross_entropy
 from neural_network import NeuralNetwork
 
 # Load Dataset
@@ -56,6 +56,15 @@ nn = NeuralNetwork(
 
 # Forward Pass
 
+# Forward Pass
+
 output = nn.forward(X_train)
 
-print(output[:10])
+# Calculate Loss
+
+loss = binary_cross_entropy(
+    y_train,
+    output
+)
+
+print(f"Initial Loss: {loss}")

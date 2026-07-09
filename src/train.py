@@ -54,17 +54,29 @@ nn = NeuralNetwork(
 
 )
 
-# Forward Pass
+epochs = 1000
+learning_rate = 0.01
 
-# Forward Pass
+for epoch in range(epochs):
 
-output = nn.forward(X_train)
+    # Forward Pass
+    output = nn.forward(X_train)
 
-# Calculate Loss
+    # Compute Loss
+    loss = binary_cross_entropy(
+        y_train,
+        output
+    )
 
-loss = binary_cross_entropy(
-    y_train,
-    output
-)
+    # Backward Pass + Weight Update
+    nn.backward(
+        X_train,
+        y_train,
+        learning_rate
+    )
 
-print(f"Initial Loss: {loss}")
+    # Print progress
+    if epoch % 100 == 0:
+        print(
+            f"Epoch {epoch} Loss: {loss:.4f}"
+        )

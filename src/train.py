@@ -1,32 +1,86 @@
 import pandas as pd
+import numpy as np
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from losses import binary_cross_entropy
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report
+)
+
 from neural_network import NeuralNetwork
+from losses import binary_cross_entropy
+from visualize import plot_loss
 
+
+# ==========================
 # Load Dataset
+# ==========================
 
-df = pd.read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+df = pd.read_csv(
+    "../data/WA_Fn-UseC_-HR-Employee-Attrition.csv"
+)
 
-# Remove unnecessary columns
+print("Dataset Shape:", df.shape)
 
-df.drop(["EmployeeNumber", "EmployeeCount", "Over18", "StandardHours"], axis=1, inplace=True)
 
-# Convert target
+# ==========================
+# Drop unnecessary columns
+# ==========================
 
-df["Attrition"] = df["Attrition"].map({
-    "Yes": 1,
-    "No": 0
-})
+df.drop(
+    [
+        "EmployeeNumber",
+        "EmployeeCount",
+        "Over18",
+        "StandardHours"
+    ],
+    axis=1,
+    inplace=True
+)
 
+
+# ==========================
+# Convert Target Variable
+# ==========================
+
+df["Attrition"] = df["Attrition"].map(
+    {
+        "Yes": 1,
+        "No": 0
+    }
+)
+
+
+# ==========================
 # One Hot Encoding
+# ==========================
 
-df = pd.get_dummies(df, drop_first=True)
+df = pd.get_dummies(
+    df,
+    drop_first=True
+)
 
-X = df.drop("Attrition", axis=1).values
-y = df["Attrition"].values.reshape(-1, 1)
 
+# ==========================
+# Features and Labels
+# ==========================
+
+X = df.drop(
+    "Attrition",
+    axis=1
+).values
+
+y = df["Attrition"].values.reshape(
+    -1,
+    1
+)
+
+
+# ==========================
 # Train Test Split
+# ==========================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -35,48 +89,118 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
-# Scaling
+
+# ==========================
+# Feature Scaling
+# ==========================
 
 scaler = StandardScaler()
 
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Create Model
+
+# ==========================
+# Create Neural Network
+# ==========================
 
 nn = NeuralNetwork(
-
     input_size=X_train.shape[1],
-
     hidden_size=16,
-
     output_size=1
-
 )
+
+
+# ==========================
+# Training Parameters
+# ==========================
 
 epochs = 1000
 learning_rate = 0.01
 
+loss_history = []
+
+
+# ==========================
+# Training Loop
+# ==========================
+
 for epoch in range(epochs):
 
-    # Forward Pass
+    # Forward Propagation
     output = nn.forward(X_train)
 
-    # Compute Loss
+    # Calculate Loss
     loss = binary_cross_entropy(
         y_train,
         output
     )
 
-    # Backward Pass + Weight Update
+    loss_history.append(loss)
+
+    # Backpropagation + Gradient Descent
     nn.backward(
         X_train,
         y_train,
         learning_rate
     )
 
-    # Print progress
+    # Print Progress
     if epoch % 100 == 0:
         print(
-            f"Epoch {epoch} Loss: {loss:.4f}"
+            f"Epoch {epoch} | Loss: {loss:.4f}"
         )
+
+
+# ==========================
+# Prediction
+# ==========================
+
+predictions = nn.forward(X_test)
+
+predictions = (
+    predictions > 0.5
+).astype(int)
+
+
+# ==========================
+# Evaluation Metrics
+# ==========================
+
+accuracy = accuracy_score(
+    y_test,
+    predictions
+)
+
+print("\n==========================")
+print("MODEL PERFORMANCE")
+print("==========================")
+
+print(
+    f"Accuracy: {accuracy*100:.2f}%"
+)
+
+print("\nConfusion Matrix:\n")
+print(
+    confusion_matrix(
+        y_test,
+        predictions
+    )
+)
+
+print("\nClassification Report:\n")
+print(
+    classification_report(
+        y_test,
+        predictions
+    )
+)
+
+
+# ==========================
+# Plot Loss Curve
+# ==========================
+
+plot_loss(loss_history)
+
+    

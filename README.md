@@ -45,3 +45,12 @@ IBM HR Analytics Employee Attrition & Performance Dataset (Kaggle)
 - ⬜ Commit 10 – Model Evaluation
 - ⬜ Commit 11 – TensorFlow Implementation
 - ⬜ Commit 12 – Project Comparison & Documentation
+
+Commit 3 - Data Preprocessing
+Features Implemented
+Loaded IBM HR Attrition dataset
+Encoded categorical variables using LabelEncoder
+Encoded target variable
+Train-Test Split
+Standardized numerical features
+Prevented data leakage by fitting scaler only on training data

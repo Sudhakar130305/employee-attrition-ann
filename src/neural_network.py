@@ -55,3 +55,15 @@ class NeuralNetwork:
 
         self.W2 -= learning_rate * dW2
         self.b2 -= learning_rate * db2
+    def save_weights(self):
+        np.save("W1.npy", self.W1)
+        np.save("b1.npy", self.b1)
+        np.save("W2.npy", self.W2)
+        np.save("b2.npy", self.b2)
+
+
+    def load_weights(self):
+        self.W1 = np.load("W1.npy")
+        self.b1 = np.load("b1.npy")
+        self.W2 = np.load("W2.npy")
+        self.b2 = np.load("b2.npy")
